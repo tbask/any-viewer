@@ -47,8 +47,9 @@ Operation under a strict CSP has not been tested end to end; treat the table as 
 
 ## "No download button" is not copy protection
 
-The viewer offers no way to download the file and, by default, turns off the context menu, dragging content out,
-text selection and copying (`allowCopy: true` brings copying back; `suppressSaveUi: false` the context menu).
+By default the viewer offers no way to download or print the file and turns off the context menu, dragging content
+out, text selection and copying (`allowCopy: true` brings copying back; `suppressSaveUi: false` the context menu;
+`download: true` and `print: true` add toolbar buttons that hand the file to the user).
 
 This removes the obvious paths. It is **not** a protection: anything shown on a device can be extracted with
 developer tools, a network proxy or a screenshot. If you need protection, do it on the server — serve pages as

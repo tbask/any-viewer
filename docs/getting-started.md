@@ -119,12 +119,19 @@ For the Angular CLI see [angular.md](./angular.md#pdfjs-assets).
 
 ## Interface language
 
-The interface is English or Russian. It follows `uiLanguage`, then `locale`, then the browser language;
-anything but Russian gives English.
+The interface is English, Russian or Kazakh. It follows `uiLanguage`, then `locale`, then the browser language;
+other languages give English.
 
 ```ts
-createViewer(container, { uiLanguage: 'en' });
+const viewer = createViewer(container, { locale: 'kk-KZ' });
+
+// Later, when the user switches the language of the application:
+viewer.setLocale('ru-RU');
 ```
+
+`setLocale` changes the interface at once and renders the opened file again with the new number and date formats,
+without loading it a second time. Set `uiLanguage` only if the interface must stay in one language whatever the
+locale is.
 
 For another language, or to change single strings, pass `labels`:
 
@@ -135,6 +142,17 @@ createViewer(container, { labels: { ...LABELS_EN, loading: 'Wird geladen…', pa
 ```
 
 `locale` (a BCP 47 tag such as `en-GB`) controls how numbers and dates are formatted in spreadsheets and charts.
+
+## Download and print
+
+By default the viewer has no way to save or print the file. Both buttons are opt-in:
+
+```ts
+createViewer(container, { download: true, print: true });
+```
+
+They suit desktop browsers; in a mobile WebView leave them off. `viewer.download()` and `viewer.print()` do the
+same from your own controls. See [what is printed](./api.md#printing).
 
 ## Theming
 

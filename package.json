@@ -1,6 +1,6 @@
 {
   "name": "any-viewer",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Client-side file viewer for the web and mobile WebViews: PDF, Word, Excel, PowerPoint, OpenDocument, images, archives, e-mail, media and more. No server conversion, no runtime dependencies.",
   "keywords": [
     "file-viewer",

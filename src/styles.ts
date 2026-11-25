@@ -86,6 +86,9 @@ export const STYLES = /* css */ `
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+.fv-btn svg { display: block; margin: auto; }
+.fv-btn[hidden] { display: none; }
+.fv-actions { flex: none; display: flex; align-items: center; gap: 2px; }
 .fv-btn:hover { background: color-mix(in srgb, var(--_text) 9%, transparent); }
 .fv-btn:active { background: color-mix(in srgb, var(--_text) 16%, transparent); }
 .fv-btn:focus-visible, .fv-text:focus-visible, .fv-grid:focus-visible, .fv-pdf:focus-visible { outline: 2px solid var(--_accent); outline-offset: -2px; }

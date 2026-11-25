@@ -39,12 +39,13 @@ export function Preview() {
 | --- | --- | --- |
 | `source` | `string \| URL \| Blob \| ArrayBuffer \| Uint8Array \| null` | The file. `null` clears the viewer |
 | `name`, `format`, `mimeType`, `password` | | [Open options](./api.md#openoptions) |
+| `locale` | `string` | Language as a BCP 47 tag (`en-GB`, `ru-RU`, `kk-KZ`). Can change at any time: the interface switches and the opened file is rendered again without being loaded a second time |
 | `options` | `ViewerOptions` without callbacks | [Viewer options](./api.md#createviewercontainer-options). Read once on mount; change `key` to apply new ones |
 | `onLoad` | `(info: OpenedFileInfo) => void` | A file is on screen |
 | `onError` | `(error: ViewerError) => void` | A file could not be opened |
 | `className`, `style` | | Applied to the host `div`. Default style: `height: 100%` |
 
-The `ref` exposes `zoomIn()`, `zoomOut()`, `zoomReset()`, `close()` and `viewer` (the underlying [`Viewer`](./api.md#viewer)).
+The `ref` exposes `zoomIn()`, `zoomOut()`, `zoomReset()`, `close()`, `download()`, `print()` and `viewer` (the underlying [`Viewer`](./api.md#viewer)).
 
 ## Notes
 

@@ -81,6 +81,10 @@ export interface Labels {
   serialNumber: string;
   issuer: string;
   validity: string;
+  /** Toolbar button that saves the opened file (option `download`). */
+  download: string;
+  /** Toolbar button that prints the opened file (option `print`). */
+  print: string;
 }
 
 export interface PdfOptions {
@@ -120,8 +124,9 @@ export interface ViewerOptions {
   /** Whether to show the top bar (file name, zoom, pages). Default: true. */
   toolbar?: boolean;
   /**
-   * Interface language: `'en'` or `'ru'` (a full tag such as `ru-RU` also works). By default it follows `locale`,
-   * and without `locale` the browser language; anything but Russian gives English.
+   * Interface language: `'en'`, `'ru'` or `'kk'` (a full tag such as `ru-RU` or `kk-KZ` also works, and so does
+   * `kz`). By default it follows `locale`, and without `locale` the browser language; other languages give English.
+   * Set it only to keep the interface in one language whatever `locale` is: it also wins over `setLocale()`.
    */
   uiLanguage?: string;
   /** Overrides for individual interface strings, applied on top of the language chosen by `uiLanguage`. */
@@ -132,9 +137,20 @@ export interface ViewerOptions {
   fetchOptions?: RequestInit;
   /**
    * Language for numbers and dates in tables and charts (BCP 47, for example `en-GB`): group separators, month names,
-   * the short date pattern. Default: the browser language.
+   * the short date pattern. It also selects the interface language unless `uiLanguage` is set.
+   * Default: the browser language. Can be changed later with `viewer.setLocale()`.
    */
   locale?: string;
+  /**
+   * Show a "Download" button in the toolbar that saves the opened file as it was received.
+   * Default: false — the viewer offers no way to save the file.
+   */
+  download?: boolean;
+  /**
+   * Show a "Print" button in the toolbar. A PDF is printed by the browser from the original file; other formats
+   * are printed as they are rendered. Audio and video cannot be printed. Default: false.
+   */
+  print?: boolean;
   /** Encoding for text that is neither UTF-8 nor UTF-16. Default: windows-1251. */
   fallbackEncoding?: string;
   /**
@@ -241,6 +257,16 @@ export interface Viewer {
   zoomIn(): void;
   zoomOut(): void;
   zoomReset(): void;
+  /**
+   * Changes the language at run time: interface strings (unless `uiLanguage` is set) and the formatting of numbers
+   * and dates. The opened file is rendered again from the data already loaded; `onLoad` is not called a second time.
+   * `undefined` returns to the browser language.
+   */
+  setLocale(locale: string | undefined): void;
+  /** Saves the opened file, as the "Download" button does. Works whether or not the button is shown. */
+  download(): Promise<void>;
+  /** Prints the opened file, as the "Print" button does. Works whether or not the button is shown. */
+  print(): Promise<void>;
 }
 
 export const DEFAULT_LIMITS: ViewerLimits = {

@@ -9,7 +9,7 @@
       body { display: flex; flex-direction: column; font: 14px/1.4 system-ui, sans-serif; background: #e9ecef; color: #1f2328; }
       header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #d9dde3; }
       header strong { margin-right: 8px; }
-      button, label.pick { font: inherit; padding: 6px 12px; border: 1px solid #c5cad1; border-radius: 8px; background: #f6f7f9; cursor: pointer; }
+      button, label.pick, select { font: inherit; padding: 6px 12px; border: 1px solid #c5cad1; border-radius: 8px; background: #f6f7f9; cursor: pointer; }
       button:hover, label.pick:hover { background: #eceef1; }
       input[type='file'] { display: none; }
       #status { margin-left: auto; color: #6b7280; font-size: 13px; }
@@ -32,6 +32,12 @@
       <button data-sample="csv">CSV</button>
       <button data-sample="bigcsv">CSV, 300k rows</button>
       <button data-sample="pdf">PDF</button>
+      <select id="locale" aria-label="Language">
+        <option value="">Browser language</option>
+        <option value="en-GB">English</option>
+        <option value="ru-RU">Русский</option>
+        <option value="kk-KZ">Қазақша</option>
+      </select>
       <span id="status">Drop a file here</span>
     </header>
     <div id="viewer"></div>

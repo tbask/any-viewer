@@ -46,6 +46,12 @@ export class AnyViewerComponent implements AfterViewInit, OnChanges, OnDestroy {
   /** Password for a protected file. Without it the viewer asks the user. */
   @Input() password: string | undefined;
   /**
+   * Language as a BCP 47 tag (`en-GB`, `ru-RU`, `kk-KZ`): interface strings and the formatting of numbers and dates.
+   * Unlike `options` it can change at any time: the interface switches at once and the opened file is rendered
+   * again without being loaded a second time. Without it the `locale` from the options, then the browser language.
+   */
+  @Input() locale: string | undefined;
+  /**
    * Viewer options, merged over the defaults from `provideAnyViewer()`. They are read once, when the viewer
    * is created; to apply different options recreate the component (for example with `@if`).
    */
@@ -83,6 +89,7 @@ export class AnyViewerComponent implements AfterViewInit, OnChanges, OnDestroy {
         this.viewer = createViewer(mount, {
           ...this.defaults,
           ...this.options,
+          ...(this.locale !== undefined ? { locale: this.locale } : {}),
           onLoad: (info) => this.zone.run(() => this.loaded.emit(info)),
           onError: (error) => this.zone.run(() => this.failed.emit(error)),
         });
@@ -93,6 +100,10 @@ export class AnyViewerComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.viewer) return;
+    if (changes['locale']) {
+      const locale = this.locale ?? this.options?.locale ?? this.defaults?.locale;
+      this.zone.runOutsideAngular(() => this.viewer?.setLocale(locale));
+    }
     if (changes['source'] || changes['name'] || changes['format'] || changes['mimeType'] || changes['password']) this.open();
   }
 
@@ -114,6 +125,16 @@ export class AnyViewerComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   zoomReset(): void {
     this.viewer?.zoomReset();
+  }
+
+  /** Saves the opened file. The toolbar button is switched on with the `download` option. */
+  download(): Promise<void> {
+    return this.viewer?.download() ?? Promise.resolve();
+  }
+
+  /** Prints the opened file. The toolbar button is switched on with the `print` option. */
+  print(): Promise<void> {
+    return this.viewer?.print() ?? Promise.resolve();
   }
 
   /** Closes the current file and frees its resources; the component stays usable. */

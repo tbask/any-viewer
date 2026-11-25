@@ -1,6 +1,6 @@
 {
   "name": "any-viewer-angular",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Angular 17+ component for any-viewer, the client-side file viewer (PDF, Word, Excel, PowerPoint, images, archives and more).",
   "keywords": [
     "angular",
@@ -32,7 +32,7 @@
   "peerDependencies": {
     "@angular/common": ">=17.0.0",
     "@angular/core": ">=17.0.0",
-    "any-viewer": "^0.9.0"
+    "any-viewer": "^0.10.0"
   },
   "dependencies": {
     "tslib": "^2.6.0"

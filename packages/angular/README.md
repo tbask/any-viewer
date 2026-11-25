@@ -32,12 +32,36 @@ export class PreviewComponent {
 | --- | --- |
 | `source` | URL, `File`/`Blob`, `ArrayBuffer`, `Uint8Array`; `null` clears the viewer |
 | `name`, `format`, `mimeType`, `password` | Open options |
-| `options` | Viewer options, read once when the viewer is created |
+| `locale` | Language (`en-GB`, `ru-RU`, `kk-KZ`); can change at run time, the interface and the opened file follow |
+| `options` | Viewer options, read once when the viewer is created; `{ download: true, print: true }` adds the toolbar buttons |
 
 | Output | |
 | --- | --- |
 | `loaded` | `OpenedFileInfo` — a file is on screen |
 | `failed` | `ViewerError` — a file could not be opened |
+
+## Options
+
+The viewer is view only by default: no download, no printing, no copying. Open up what you need through `options`
+(read once, when the component is created) or for the whole application with `provideAnyViewer()`:
+
+```html
+<any-viewer [source]="source" [locale]="locale" [options]="{ download: true, print: true, allowCopy: true }" />
+```
+
+| Option | Default | |
+| --- | --- | --- |
+| `download` | `false` | Toolbar button that saves the file |
+| `print` | `false` | Toolbar button that prints the file |
+| `allowCopy` | `false` | Text selection and copying |
+| `suppressSaveUi` | `true` | No context menu, no dragging content out |
+| `links` | `'new-tab'` | Links inside files: `'new-tab'` or `'none'` |
+| `toolbar` | `true` | Top bar with the file name, pages and zoom |
+| `uiLanguage`, `labels` | — | Pin the interface language; your own strings |
+| `passwordPrompt` | `true` | Ask for the password of a protected file |
+| `pdf.assetsUrl` | — | Folder with PDF.js assets |
+
+All options: <https://github.com/tbask/any-viewer/blob/main/docs/api.md#createviewercontainer-options>
 
 Application-wide defaults:
 

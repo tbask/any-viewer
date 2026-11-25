@@ -182,7 +182,7 @@ describe('spreadsheets and interface', () => {
     expect(formatSize(2970)).toBe('2.9 KB');
     expect(formatSize(2970, LABELS_RU.sizeUnits, LABELS_RU.decimalSeparator)).toBe('2,9 КБ');
     expect(resolveLabels('ru-RU')).toBe(LABELS_RU);
-    expect(resolveLabels('kk-KZ')).toBe(LABELS_EN);
+    expect(resolveLabels('de-DE')).toBe(LABELS_EN);
     expect(resolveLabels('en')).toBe(LABELS_EN);
   });
 });

@@ -17,6 +17,11 @@ export interface AnyViewerProps extends OpenOptions {
    * remount the component (for example with a different `key`).
    */
   options?: Omit<ViewerOptions, 'onLoad' | 'onError'>;
+  /**
+   * Language as a BCP 47 tag (`en-GB`, `ru-RU`, `kk-KZ`): interface strings and the formatting of numbers and dates.
+   * Unlike `options` it can change at any time; the opened file is rendered again without being loaded a second time.
+   */
+  locale?: string;
   /** Called after a file has been opened and rendered. */
   onLoad?: (info: OpenedFileInfo) => void;
   /** Called when a file could not be opened. */
@@ -27,13 +32,13 @@ export interface AnyViewerProps extends OpenOptions {
 }
 
 /** What a `ref` on `<AnyViewer>` gives access to. */
-export type AnyViewerHandle = Pick<Viewer, 'zoomIn' | 'zoomOut' | 'zoomReset' | 'close'> & {
+export type AnyViewerHandle = Pick<Viewer, 'zoomIn' | 'zoomOut' | 'zoomReset' | 'close' | 'download' | 'print'> & {
   /** The underlying viewer, or `null` before mount and after unmount. */
   readonly viewer: Viewer | null;
 };
 
 function AnyViewerInner(props: AnyViewerProps, ref: Ref<AnyViewerHandle>): ReactElement {
-  const { source, options, onLoad, onError, className, style, name, format, mimeType, password } = props;
+  const { source, options, locale, onLoad, onError, className, style, name, format, mimeType, password } = props;
   const host = useRef<HTMLDivElement | null>(null);
   const viewer = useRef<Viewer | null>(null);
   const callbacks = useRef({ onLoad, onError });
@@ -47,6 +52,7 @@ function AnyViewerInner(props: AnyViewerProps, ref: Ref<AnyViewerHandle>): React
     host.current.appendChild(mount);
     const created = createViewer(mount, {
       ...options,
+      ...(locale !== undefined ? { locale } : {}),
       onLoad: (info) => callbacks.current.onLoad?.(info),
       onError: (error) => callbacks.current.onError?.(error),
     });
@@ -59,6 +65,13 @@ function AnyViewerInner(props: AnyViewerProps, ref: Ref<AnyViewerHandle>): React
     // Options are read once by design (see the `options` prop).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Declared before the effect that opens the file: on mount the language is already in the options, and later
+  // changes switch it in place.
+  useEffect(() => {
+    viewer.current?.setLocale(locale ?? options?.locale);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   useEffect(() => {
     const current = viewer.current;
@@ -84,6 +97,8 @@ function AnyViewerInner(props: AnyViewerProps, ref: Ref<AnyViewerHandle>): React
       zoomOut: () => viewer.current?.zoomOut(),
       zoomReset: () => viewer.current?.zoomReset(),
       close: () => viewer.current?.close(),
+      download: () => viewer.current?.download() ?? Promise.resolve(),
+      print: () => viewer.current?.print() ?? Promise.resolve(),
     }),
     [],
   );

@@ -29,6 +29,11 @@ export interface RendererHandle {
   zoomReset?(): void;
   /** Change the zoom by the given factor (pinch). */
   zoomBy?(factor: number): void;
+  /**
+   * Content for printing, when the view on screen cannot be printed as it is (a virtualised table shows only
+   * the visible rows). Without it the rendered content is printed.
+   */
+  printContent?(): Promise<HTMLElement>;
 }
 
 export type RendererFactory = (ctx: RenderContext) => Promise<RendererHandle>;

@@ -16,6 +16,7 @@ const OVERSCAN_COLS = 2;
 const BASE_FONT = 13;
 const BASE_ROW = 28;
 const MAX_SCROLL_HEIGHT = 15_000_000; // safe element height limit across browsers
+const PRINT_MAX_ROWS = 5000; // rows of a sheet that go to the printer
 
 const NUMERIC_RE = /^[-+(]?[\d\s  .,]+[)%]?$/;
 
@@ -582,11 +583,61 @@ export function createGrid(ctx: RenderContext, source: TableSource, options: { p
     schedule();
   };
 
+  /**
+   * The active sheet as a plain table for printing: the grid itself holds only the visible cells.
+   * Pictures and charts of the sheet are not included.
+   */
+  const printContent = async (): Promise<HTMLElement> => {
+    const sheetMeta = meta;
+    const rowCount = Math.min(sheetMeta.rowCount, PRINT_MAX_ROWS);
+    const box = el('div');
+    if (source.sheets.length > 1 && source.sheets[activeSheet]) box.appendChild(el('div', 'fv-print-caption', source.sheets[activeSheet]));
+    const table = el('table', 'fv-print-table');
+    // Cells covered by a merge are left out; the first cell of the merge spans them.
+    const spans = new Map<string, Merge>();
+    const covered = new Set<string>();
+    for (const m of sheetMeta.merges ?? []) {
+      if (m.r0 >= rowCount) continue;
+      spans.set(`${m.r0}:${m.c0}`, m);
+      for (let r = m.r0; r <= Math.min(m.r1, rowCount - 1); r++) for (let c = m.c0; c <= m.c1; c++) if (r !== m.r0 || c !== m.c0) covered.add(`${r}:${c}`);
+    }
+    for (let start = 0; start < rowCount; start += BLOCK) {
+      const block = await source.getRows(start, Math.min(rowCount, start + BLOCK));
+      if (destroyed || meta !== sheetMeta) break;
+      block.rows.forEach((cells, i) => {
+        const r = start + i;
+        const tr = el('tr');
+        for (let c = 0; c < sheetMeta.columnCount; c++) {
+          const key = `${r}:${c}`;
+          if (covered.has(key)) continue;
+          const value = cells?.[c];
+          const td = el('td', undefined, value ?? '');
+          if (value && NUMERIC_RE.test(value)) td.className = 'fv-num';
+          const styleId = block.styles?.[i]?.[c];
+          applyStyle(td, styleId ? sheetMeta.styles?.[styleId] : undefined);
+          // On paper the table has its own thin lines; the shadows that draw borders on screen would double them.
+          td.style.boxShadow = '';
+          const span = spans.get(key);
+          if (span) {
+            td.colSpan = span.c1 - span.c0 + 1;
+            td.rowSpan = Math.min(span.r1, rowCount - 1) - span.r0 + 1;
+          }
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      });
+    }
+    box.appendChild(table);
+    if (sheetMeta.rowCount > rowCount || sheetMeta.truncated) box.appendChild(el('div', 'fv-print-note', ctx.labels.truncatedRows));
+    return box;
+  };
+
   renderTabs();
   layout();
   render();
 
   return {
+    printContent,
     zoomIn: () => setZoom(zoom * 1.15),
     zoomBy: (factor) => setZoom(zoom * factor),
     zoomOut: () => setZoom(zoom / 1.15),

@@ -6,7 +6,7 @@ Everything is exported from the package root:
 import {
   createViewer, ViewerError, DEFAULT_LIMITS,
   detectFormat, formatFromName, formatFromMime, kindOf, isImplemented, IMPLEMENTED_FORMATS,
-  LABELS_EN, LABELS_RU, LABEL_SETS, resolveLabels,
+  LABELS_EN, LABELS_RU, LABELS_KK, LABEL_SETS, resolveLabels, normalizeLanguageTag,
 } from 'any-viewer';
 import type {
   Viewer, ViewerOptions, OpenOptions, OpenedFileInfo, FileSource, FileFormat, FileKind,
@@ -21,9 +21,11 @@ Creates a viewer inside `container` and returns a [`Viewer`](#viewer).
 | Option | Default | Purpose |
 | --- | --- | --- |
 | `toolbar` | `true` | Top bar with the file name, pages and zoom |
-| `uiLanguage` | from `locale`, then the browser | Interface language: `'en'` or `'ru'` |
+| `uiLanguage` | from `locale`, then the browser | Interface language: `'en'`, `'ru'` or `'kk'`. Set it only to pin the interface to one language: it wins over `locale` and `setLocale()` |
 | `labels` | — | Overrides for individual interface strings |
-| `locale` | browser language | BCP 47 tag for numbers and dates in spreadsheets and charts, e.g. `'en-GB'` |
+| `locale` | browser language | BCP 47 tag, e.g. `'en-GB'`, `'ru-RU'`, `'kk-KZ'`: numbers and dates in spreadsheets and charts, and the interface language unless `uiLanguage` is set. Can be changed later with `setLocale()` |
+| `download` | `false` | Show a "Download" button in the toolbar; it saves the file as it was received |
+| `print` | `false` | Show a "Print" button in the toolbar. See [Printing](#printing) |
 | `limits` | see [Limits](#limits) | Size limits |
 | `pdf.assetsUrl` | — | URL of the folder with PDF.js assets |
 | `pdf.workerSrc` | bundled | URL of an external PDF.js worker file (needed under a strict CSP) |
@@ -53,6 +55,20 @@ Creates a viewer inside `container` and returns a [`Viewer`](#viewer).
 | `close()` | Closes the current file and frees its memory |
 | `destroy()` | Removes the viewer. The instance cannot be used afterwards |
 | `zoomIn()`, `zoomOut()`, `zoomReset()` | Zoom, the same as the toolbar buttons |
+| `setLocale(locale)` | Changes the language at run time: interface strings and number and date formats. The opened file is rendered again from the bytes already loaded (scroll position and zoom are reset); `onLoad` is not called again. `undefined` returns to the browser language |
+| `download()` | Saves the opened file. Works whether or not the button is shown. Returns a `Promise` |
+| `print()` | Prints the opened file. Works whether or not the button is shown. Returns a `Promise` |
+
+### Printing
+
+A PDF is handed to the browser's own PDF engine, so the original file is printed, not its picture on screen.
+Other formats are printed as the viewer renders them: documents, slides (one per landscape page), text, images,
+archive listings. Of a spreadsheet the active sheet is printed as a plain table, up to 5000 rows, without the
+pictures and charts placed on the sheet. Audio and video cannot be printed, and the button is hidden for them.
+
+Printing uses a hidden same-origin `<iframe>`; under a Content Security Policy it needs the same
+`style-src 'unsafe-inline'` as the viewer itself, and for PDF `frame-src blob:`. In mobile WebViews printing is
+usually unavailable: leave the option off there.
 
 ### `FileSource`
 
@@ -144,8 +160,9 @@ Error messages are in English and meant for developers; what the user sees comes
 
 ## Labels
 
-`Labels` is the interface with every UI string. `LABELS_EN` and `LABELS_RU` are complete sets;
-`resolveLabels(tag?)` picks one of them for a BCP 47 tag. Two strings contain placeholders:
+`Labels` is the interface with every UI string. `LABELS_EN`, `LABELS_RU` and `LABELS_KK` (Kazakh) are complete
+sets; `resolveLabels(tag?)` picks one of them for a BCP 47 tag. Kazakh is `kk`; the country code written as a
+language (`kz`, `kz-KZ`) is accepted and read as `kk` — `normalizeLanguageTag(tag)` does that conversion. Two strings contain placeholders:
 `shownByContent` (`{format}`) and `mediaCodecUnsupported` (`{codec}`).
 
 ## Format helpers

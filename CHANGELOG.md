@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/). While the version is 0.x, minor releases may contain breaking changes.
 
+## [0.10.0] - 2026-11-25
+
+### Added
+
+- Kazakh interface (`kk`; `kz` and `kz-KZ` are accepted). `LABELS_KK` and `normalizeLanguageTag` are exported.
+- `viewer.setLocale(locale)`: switches the interface language and the number and date formats at run time; the
+  opened file is rendered again without being loaded a second time. The Angular and React components get a
+  `locale` input/prop that can change at any time; the WebView host page accepts `locale` and a `locale` message.
+- `download` and `print` options add toolbar buttons (both off by default), with `viewer.download()` and
+  `viewer.print()` for custom controls. A PDF is printed from the original file by the browser; other formats are
+  printed as rendered, a spreadsheet as a plain table of the active sheet.
+
+### Changed
+
+- `Labels` has two new strings, `download` and `print`: a complete custom label set has to add them.
+- `uiLanguage`, when set, keeps the interface language fixed even after `setLocale()`.
+
 ## [0.9.0] - 2026-11-25
 
 Answers an independent review of 0.7.0 (72 findings on 118 test files). The status of every finding is in

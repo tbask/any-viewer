@@ -8,6 +8,7 @@ coverage/
 .DS_Store
 scratch/
 __pycache__/
+.playwright-mcp/
 
 # Editor settings
 .idea/

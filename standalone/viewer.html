@@ -45,6 +45,9 @@
 
         var viewer = AnyViewer.createViewer(document.getElementById('viewer'), {
           uiLanguage: params.get('lang') || undefined,
+          locale: params.get('locale') || undefined,
+          download: params.get('download') === '1',
+          print: params.get('print') === '1',
           toolbar: params.get('toolbar') !== '0',
           allowCopy: params.get('copy') === '1',
           pdf: { assetsUrl: params.get('pdfAssets') || new URL('../pdfjs/', location.href).href },
@@ -80,6 +83,7 @@
           zoomIn: function () { viewer.zoomIn(); },
           zoomOut: function () { viewer.zoomOut(); },
           zoomReset: function () { viewer.zoomReset(); },
+          setLocale: function (locale) { viewer.setLocale(locale || undefined); },
         };
 
         window.addEventListener('message', function (event) {
@@ -90,6 +94,7 @@
           if (!data || typeof data !== 'object') return;
           if (data.type === 'open') open(data);
           else if (data.type === 'close') viewer.close();
+          else if (data.type === 'locale') viewer.setLocale(data.locale || undefined);
         });
 
         send({ type: 'ready' });

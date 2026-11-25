@@ -26,7 +26,9 @@ in `dist/standalone/`:
 | `src` | URL of the file |
 | `name` | File name (toolbar, format hint) |
 | `format` | Explicit format |
-| `lang` | `en` or `ru`; default is the WebView language |
+| `lang` | `en`, `ru` or `kk`: pins the interface language; default is the WebView language |
+| `locale` | BCP 47 tag for the interface and for numbers and dates, e.g. `kk-KZ`. Can be changed later with `AnyViewerHost.setLocale(tag)` or the message `{ "type": "locale", "locale": "ru-RU" }` (only when `lang` is not set) |
+| `download=1`, `print=1` | Show the download and print buttons. Both are off by default and rarely work inside a mobile WebView |
 | `toolbar=0` | Hide the toolbar |
 | `copy=1` | Allow text selection and copying |
 | `pdfAssets` | URL of the `pdfjs/` folder; default `../pdfjs/` relative to the page |

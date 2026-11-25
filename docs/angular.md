@@ -67,6 +67,7 @@ export class PreviewModule {}
 | `format` | `FileFormat` | Explicit format |
 | `mimeType` | `string` | MIME type |
 | `password` | `string` | Password for a protected file |
+| `locale` | `string` | Language as a BCP 47 tag: `en-GB`, `ru-RU`, `kk-KZ`. Can change at any time — see [Switching the language](#switching-the-language) |
 | `options` | `AnyViewerOptions` | [Viewer options](./api.md#createviewercontainer-options) without `onLoad`/`onError`. Read once, when the viewer is created |
 
 | Output | Payload | |
@@ -75,6 +76,7 @@ export class PreviewModule {}
 | `failed` | `ViewerError` | A file could not be opened |
 
 Methods available through a template reference or `@ViewChild`: `zoomIn()`, `zoomOut()`, `zoomReset()`, `close()`,
+`download()`, `print()`,
 and the `instance` getter with the underlying [`Viewer`](./api.md#viewer) (`null` until it has been created).
 
 ```html
@@ -84,6 +86,35 @@ and the `instance` getter with the underlying [`Viewer`](./api.md#viewer) (`null
 
 A new file opens whenever `source`, `name`, `format`, `mimeType` or `password` changes. To reopen the same
 source, call `viewer.instance?.open(...)`.
+
+## Switching the language
+
+The interface has English, Russian and Kazakh built in. Bind `locale` to the language of your application:
+
+```html
+<any-viewer [source]="source" [locale]="currentLocale" />
+```
+
+When the value changes, the toolbar and messages switch at once and the opened file is rendered again with the
+new number and date formats — from the data already loaded, without another request and without a second
+`loaded` event. Scroll position and zoom are reset. `kz-KZ` is accepted and read as `kk-KZ`.
+
+For any other language pass your own strings through `options.labels`.
+
+## Download, print and copying
+
+The viewer is view only by default: `download`, `print` and `allowCopy` are all `false`, and `suppressSaveUi`
+(no context menu, no dragging out) is `true`. The full list of options with defaults is in the
+[API reference](./api.md#createviewercontainer-options).
+
+The buttons are off by default. Switch them on where they make sense — typically on desktop:
+
+```html
+<any-viewer [source]="source" [options]="{ download: isDesktop, print: isDesktop }" />
+```
+
+`options` is read once, so decide before the component is created. The `download()` and `print()` methods work
+with or without the buttons, for your own toolbar. What is printed for each format: [API reference](./api.md#printing).
 
 ## Application-wide defaults
 

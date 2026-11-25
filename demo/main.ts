@@ -4,6 +4,9 @@ import { makeSamplePdf, makeSamplePng } from './samples';
 const status = document.getElementById('status')!;
 const viewer = createViewer(document.getElementById('viewer')!, {
   pdf: { assetsUrl: new URL('./pdfjs/', location.href).href },
+  locale: new URLSearchParams(location.search).get('locale') ?? undefined,
+  download: true,
+  print: true,
   onLoad: (info) => (status.textContent = `${info.format.toUpperCase()} · ${info.size != null ? formatSize(info.size) : 'by URL'}`),
   onError: (error) => (status.textContent = `Error: ${error.code}`),
 });
@@ -71,3 +74,6 @@ document.querySelectorAll<HTMLButtonElement>('button[data-sample]').forEach((but
     void open(source, options);
   });
 });
+
+// Language switch: the interface and the opened file follow at once.
+document.getElementById('locale')?.addEventListener('change', (e) => viewer.setLocale((e.target as HTMLSelectElement).value || undefined));

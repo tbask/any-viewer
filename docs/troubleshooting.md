@@ -48,7 +48,9 @@ They follow the browser locale. Set `locale: 'en-GB'` (or another tag) explicitl
 
 ## The interface is in the wrong language
 
-Set `uiLanguage: 'en'` or `'ru'`, or provide your own strings through `labels`.
+The interface follows `locale` (`en`, `ru` and `kk` are built in) and can be switched with `viewer.setLocale()`.
+If `uiLanguage` is set, it wins: remove it to let `locale` decide. For another language provide your own strings
+through `labels`.
 
 ## Workers are blocked by CSP
 
@@ -60,7 +62,7 @@ Add `worker-src blob:`. Without it parsing runs on the main thread (slower, but 
 The package is ESM-only and needs a real DOM (Shadow DOM, canvas, workers). In unit tests mock the module:
 
 ```ts
-jest.mock('any-viewer', () => ({ createViewer: () => ({ open: async () => ({}), close() {}, destroy() {}, zoomIn() {}, zoomOut() {}, zoomReset() {} }) }));
+jest.mock('any-viewer', () => ({ createViewer: () => ({ open: async () => ({}), close() {}, destroy() {}, zoomIn() {}, zoomOut() {}, zoomReset() {}, setLocale() {}, download: async () => {}, print: async () => {} }) }));
 ```
 
 and test the real viewer in a browser runner (Playwright, Cypress).

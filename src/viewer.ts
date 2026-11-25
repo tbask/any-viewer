@@ -3,12 +3,13 @@
  * lazy loading of the right renderer, the toolbar and states (loading, error).
  */
 import { CorruptFileError, detectFile, detectFormat, EncryptedFileError, FormatMismatchError, formatFromMime, formatFromName, isImplemented, kindOf } from './detect';
-import { resolveLabels } from './labels';
+import { normalizeLanguageTag, resolveLabels } from './labels';
 import { STYLES } from './styles';
 import {
   DEFAULT_LIMITS,
   ViewerError,
   type FileFormat,
+  type FileKind,
   type FileSource,
   type Labels,
   type OpenedFileInfo,
@@ -64,8 +65,28 @@ function nameFromUrl(url: string): string {
   }
 }
 
-export function createViewer(container: HTMLElement, options: ViewerOptions = {}): Viewer {
-  const labels: Labels = { ...resolveLabels(options.uiLanguage ?? options.locale), ...options.labels };
+/** Label keys that hold one string (button titles). */
+type TextLabel = Exclude<keyof Labels, 'sizeUnits'>;
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function icon(path: string): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  for (const [name, value] of Object.entries({ viewBox: '0 0 24 24', width: '20', height: '20', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' })) svg.setAttribute(name, value);
+  const shape = document.createElementNS(SVG_NS, 'path');
+  shape.setAttribute('d', path);
+  svg.appendChild(shape);
+  return svg;
+}
+const ICON_DOWNLOAD = 'M12 4v11m0 0l-4-4m4 4l4-4M5 19h14';
+const ICON_PRINT = 'M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2M7 14h10v6H7z';
+
+export function createViewer(container: HTMLElement, userOptions: ViewerOptions = {}): Viewer {
+  // A private copy: the language can change at run time, and the caller's object must stay as it was.
+  const options: ViewerOptions = { ...userOptions, locale: normalizeLanguageTag(userOptions.locale), uiLanguage: normalizeLanguageTag(userOptions.uiLanguage) };
+  // One object for the lifetime of the viewer: renderers keep a reference, and a language change rewrites it in place.
+  const labels = {} as Labels;
+  const applyLabels = () => Object.assign(labels, resolveLabels(options.uiLanguage ?? options.locale), options.labels);
+  applyLabels();
   const limits: ViewerLimits = { ...DEFAULT_LIMITS, ...options.limits };
 
   const root = container.shadowRoot ?? container.attachShadow({ mode: 'open' });
@@ -78,29 +99,45 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
   const pagesEl = el('span', 'fv-pages');
   const zoomBox = el('div', 'fv-zoom');
   const zoomLabel = el('span', 'fv-zoom-label');
-  const makeButton = (text: string, label: string, action: () => void) => {
-    const b = el('button', 'fv-btn', text);
+  const buttons: [HTMLButtonElement, TextLabel][] = [];
+  const makeButton = (content: string | SVGElement, label: TextLabel, action: () => void) => {
+    const b = el('button', 'fv-btn');
+    b.append(content);
     b.type = 'button';
-    b.title = label;
-    b.setAttribute('aria-label', label);
     b.addEventListener('click', action);
+    buttons.push([b, label]);
     return b;
   };
+  /** Button titles follow the current language. */
+  const refreshChrome = () => {
+    for (const [b, label] of buttons) {
+      b.title = labels[label];
+      b.setAttribute('aria-label', labels[label]);
+    }
+  };
   zoomBox.append(
-    makeButton('−', labels.zoomOut, () => handle?.zoomOut?.()),
+    makeButton('−', 'zoomOut', () => handle?.zoomOut?.()),
     zoomLabel,
-    makeButton('+', labels.zoomIn, () => handle?.zoomIn?.()),
-    makeButton('⤢', labels.zoomReset, () => handle?.zoomReset?.()),
+    makeButton('+', 'zoomIn', () => handle?.zoomIn?.()),
+    makeButton('⤢', 'zoomReset', () => handle?.zoomReset?.()),
   );
   // A file opened from an archive: the button returns to the archive file list.
   const parents: { source: FileSource; options: OpenOptions }[] = [];
-  const backButton = makeButton('←', labels.backToArchive, () => {
+  const backButton = makeButton('←', 'backToArchive', () => {
     const parent = parents.pop();
     if (parent) void openInner(parent.source, parent.options).catch(() => undefined);
   });
   backButton.classList.add('fv-back');
   backButton.hidden = true;
-  bar.append(backButton, nameEl, pagesEl, zoomBox);
+  // Saving and printing are opt-in: by default the viewer offers no way to take the file out.
+  const printButton = makeButton(icon(ICON_PRINT), 'print', () => void print().catch(() => undefined));
+  const downloadButton = makeButton(icon(ICON_DOWNLOAD), 'download', () => void download().catch(() => undefined));
+  printButton.hidden = true;
+  downloadButton.hidden = true;
+  const actions = el('div', 'fv-actions');
+  actions.append(printButton, downloadButton);
+  bar.append(backButton, nameEl, pagesEl, zoomBox, actions);
+  refreshChrome();
   bar.hidden = options.toolbar === false;
 
   const notice = el('div', 'fv-notice');
@@ -255,6 +292,63 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
 
   /** The last opened source: needed to repeat the open with the entered password. */
   let last: { source: FileSource; options: OpenOptions } | null = null;
+  /** The file as it was received: what "Download" saves and what a language change renders again. */
+  let file: { blob: Blob | null; url: string | null; name: string; mimeType?: string } | null = null;
+  /** What is on screen now (after decryption and unwrapping a signature): what "Print" prints. */
+  let shown: { blob: Blob | null; url: string | null; kind: FileKind } | null = null;
+  /** The password the shown file was opened with: kept in memory only while the file is open, to render it again. */
+  let shownPassword: string | undefined;
+  let phase: 'idle' | 'loading' | 'shown' | 'error' = 'idle';
+
+  const printable = (kind: FileKind) => kind !== 'media' && kind !== 'unknown';
+  const updateActions = () => {
+    downloadButton.hidden = !(options.download === true && file);
+    printButton.hidden = !(options.print === true && shown && handle && printable(shown.kind));
+  };
+
+  /** Fetches a file that was handed to the engine by URL (a PDF is loaded in parts, never as a whole). */
+  const fetchFile = async (url: string): Promise<Blob> => {
+    const headers = new Headers(options.fetchOptions?.headers);
+    for (const [name, value] of Object.entries(options.pdf?.httpHeaders ?? {})) headers.set(name, value);
+    const response = await fetch(url, { ...options.fetchOptions, headers, ...(options.pdf?.withCredentials ? { credentials: 'include' as const } : {}) });
+    if (!response.ok) throw new ViewerError('load-failed', `${labels.loadFailed} (HTTP ${response.status})`);
+    return response.blob();
+  };
+
+  const download = async (): Promise<void> => {
+    const target = file;
+    if (!target) return;
+    const { saveBlob, saveUrl } = await import('./actions');
+    if (target.blob) return saveBlob(target.blob, target.name);
+    if (!target.url) return;
+    // Audio and video by URL can be gigabytes: they are left to the browser's own download.
+    if (shown?.kind === 'pdf') {
+      try {
+        return saveBlob(await fetchFile(target.url), target.name);
+      } catch {
+        /* no access from script (CORS): fall back to a plain link */
+      }
+    }
+    saveUrl(target.url, target.name);
+  };
+
+  const print = async (): Promise<void> => {
+    const target = shown;
+    const current = handle;
+    if (!target || !current || !host || !printable(target.kind)) return;
+    const { imageForPrint, printNode, printPdf } = await import('./actions');
+    const title = file?.name ?? '';
+    if (target.kind === 'pdf') return printPdf(target.blob ?? (await fetchFile(target.url!)));
+    if (current.printContent) return printNode(await current.printContent(), { title, landscape: true, clone: false });
+    if (target.kind === 'image') {
+      const picture = imageForPrint(host);
+      if (picture) return printNode(picture, { title, clone: false });
+    }
+    const content = host.firstElementChild as HTMLElement | null;
+    if (!content) return;
+    // Documents carry their own side margins; slides fill a landscape page.
+    return printNode(content, { title, landscape: target.kind === 'slides', margin: target.kind === 'document' ? '12mm 0' : undefined });
+  };
 
   const showError = (error: ViewerError) => {
     const promptable = error.code === 'password' && error.passwordState !== 'unsupported' && options.passwordPrompt !== false && last;
@@ -315,6 +409,11 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
     handle = null;
     host?.remove();
     host = null;
+    file = null;
+    shown = null;
+    shownPassword = undefined;
+    phase = 'idle';
+    updateActions();
     resetChrome();
     nameEl.textContent = '';
     overlay.hidden = true;
@@ -357,9 +456,11 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
     };
   };
 
-  const openInner = async (source: FileSource, openOptions: OpenOptions = {}): Promise<OpenedFileInfo> => {
+  /** `quiet`: the same file is rendered again (a language change), so the application is not notified a second time. */
+  const openInner = async (source: FileSource, openOptions: OpenOptions = {}, quiet = false): Promise<OpenedFileInfo> => {
     if (destroyed) throw new ViewerError('aborted', 'Viewer destroyed');
     close();
+    phase = 'loading';
     backButton.hidden = parents.length === 0;
     last = { source, options: { ...openOptions, password: undefined } };
     const controller = new AbortController();
@@ -373,6 +474,8 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
       if (stale()) throw new ViewerError('aborted', 'aborted');
       nameEl.textContent = src.name;
       nameEl.title = src.name;
+      file = { blob: src.blob, url: src.url, name: src.name, mimeType: src.mimeType };
+      updateActions();
       // The player reads audio and video in pieces, so they have their own, much higher size limit.
       const hintedKind = openOptions.format ?? src.format ?? (formatFromName(src.name) !== 'unknown' ? formatFromName(src.name) : formatFromMime(src.mimeType));
       const mediaHint = hintedKind === 'audio' || hintedKind === 'video';
@@ -418,7 +521,8 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
           format = found.format;
           if (found.empty) {
             const info: OpenedFileInfo = { name: src.name, format, kind: kindOf(format), size: 0, empty: true };
-            options.onLoad?.(info);
+            phase = 'shown';
+            if (!quiet) options.onLoad?.(info);
             return info;
           }
         }
@@ -502,6 +606,10 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
         throw new ViewerError('aborted', 'aborted');
       }
       handle = created;
+      shown = { blob, url: src.url, kind: kindOf(renderFormat) };
+      shownPassword = openOptions.password;
+      phase = 'shown';
+      updateActions();
       ownGestures = kindOf(renderFormat) === 'image' || kindOf(renderFormat) === 'pdf';
       zoomBox.hidden = !(created.zoomIn && created.zoomOut);
       overlay.hidden = true;
@@ -510,7 +618,7 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
       if (expectedFormat) info.expectedFormat = expectedFormat;
       if (signature) info.signature = signature;
       if (damaged) info.damaged = true;
-      options.onLoad?.(info);
+      if (!quiet) options.onLoad?.(info);
       return info;
     } catch (err) {
       const error =
@@ -519,8 +627,9 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
         host?.remove();
         host = null;
         resetChrome();
+        phase = 'error';
         showError(error);
-        options.onError?.(error);
+        if (!quiet) options.onError?.(error);
       }
       throw error;
     }
@@ -549,5 +658,20 @@ export function createViewer(container: HTMLElement, options: ViewerOptions = {}
     zoomIn: () => handle?.zoomIn?.(),
     zoomOut: () => handle?.zoomOut?.(),
     zoomReset: () => handle?.zoomReset?.(),
+    setLocale(locale) {
+      const next = normalizeLanguageTag(locale);
+      if (destroyed || next === options.locale) return;
+      options.locale = next;
+      applyLabels();
+      refreshChrome();
+      if (!last || phase === 'idle') return;
+      // Strings and number formats are baked into the rendered content, so the file is rendered again —
+      // from the bytes already loaded, without another request.
+      const again = file?.blob ? { source: file.blob as FileSource, options: { ...last.options, name: file.name, mimeType: file.mimeType } } : last;
+      // A file that is still loading has not been reported yet: that open must report as usual.
+      void openInner(again.source, { ...again.options, password: shownPassword }, phase !== 'loading').catch(() => undefined);
+    },
+    download,
+    print,
   };
 }

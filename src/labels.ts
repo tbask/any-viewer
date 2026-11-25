@@ -58,6 +58,8 @@ export const LABELS_RU: Labels = {
   serialNumber: 'Серийный номер',
   issuer: 'Удостоверяющий центр',
   validity: 'Срок действия сертификата',
+  download: 'Скачать',
+  print: 'Печать',
 };
 
 export const LABELS_EN: Labels = {
@@ -118,16 +120,92 @@ export const LABELS_EN: Labels = {
   serialNumber: 'Serial number',
   issuer: 'Certificate authority',
   validity: 'Certificate validity',
+  download: 'Download',
+  print: 'Print',
+};
+
+export const LABELS_KK: Labels = {
+  loading: 'Жүктелуде…',
+  errorTitle: 'Файлды ашу мүмкін болмады',
+  unsupported: 'Бұл файл пішіміне қолдау көрсетілмейді.',
+  notImplemented: 'Пішім танылды, бірақ оны қарау әлі іске асырылмаған.',
+  loadFailed: 'Файлды жүктеу мүмкін болмады.',
+  tooLarge: 'Файл қарау үшін тым үлкен.',
+  truncatedText: 'Файл үлкен — тек бастапқы бөлігі көрсетілген.',
+  truncatedRows: 'Кесте үлкен — тек алғашқы жолдары көрсетілген.',
+  zoomIn: 'Үлкейту',
+  zoomOut: 'Кішірейту',
+  zoomReset: 'Масштабты қалпына келтіру',
+  page: 'Бет',
+  slide: 'Слайд',
+  chart: 'Диаграмма',
+  object: 'Нысан',
+  of: '/',
+  passwordProtected: 'Файл құпиясөзбен қорғалған.',
+  empty: 'Файл бос.',
+  mismatch: 'Файл мазмұны оның кеңейтіміне сәйкес келмейді.',
+  mediaUnsupported: 'Браузер бұл файлды ойната алмайды: пішімге немесе кодекке қолдау көрсетілмейді.',
+  mediaCodecUnsupported: 'Бейне {codec} пішімінде кодталған, бұл браузер оны ойната алмайды.',
+  imageUnsupported: 'Браузер бұл суретті көрсете алмайды.',
+  fileName: 'Атауы',
+  fileSize: 'Өлшемі',
+  sizeUnits: ['Б', 'КБ', 'МБ', 'ГБ'],
+  decimalSeparator: ',',
+  backToArchive: 'Мұрағатқа оралу',
+  archiveEntryFailed: 'Мұрағаттағы файлды ашу мүмкін болмады: ол шифрланған, зақымдалған немесе қолдау көрсетілмейтін тәсілмен сығылған.',
+  from: 'Кімнен',
+  to: 'Кімге',
+  cc: 'Көшірме',
+  subject: 'Тақырып',
+  date: 'Күні',
+  attachments: 'Тіркемелер',
+  location: 'Орны',
+  header: 'Жоғарғы колонтитул',
+  footer: 'Төменгі колонтитул',
+  footnotes: 'Нұсқамалар',
+  endnotes: 'Соңғы нұсқамалар',
+  comments: 'Ескертпелер',
+  shownAsText: 'Мазмұн файл кеңейтіміне сәйкес келмейді: ішінде кәдімгі мәтін, ол сол күйінде көрсетілген.',
+  shownByContent: 'Файл кеңейтімі мазмұнына сәйкес келмейді: файл {format} ретінде ашылды.',
+  damagedShown: 'Файл зақымдалған (қиылған): оқуға болатын бөлігі көрсетілген.',
+  passwordPlaceholder: 'Құпиясөз',
+  passwordSubmit: 'Ашу',
+  wrongPassword: 'Құпиясөз қате.',
+  encryptionUnsupported: 'Файл құпиясөзбен қорғалған, ал оның шифрлау тәсіліне қолдау көрсетілмейді.',
+  corrupt: 'Файл зақымдалған немесе көрсетілген пішімде жазылмаған.',
+  signedBy: 'Қол қойған',
+  signedAt: 'Қол қойылған уақыты',
+  signatureNotVerified: 'Қолтаңбаның түпнұсқалығы тексерілген жоқ.',
+  signatureDetached: 'Бұл — бөлек қолтаңба файлы: құжаттың өзі мұнда жоқ.',
+  signer: 'Қол қоюшы',
+  organization: 'Ұйым',
+  serialNumber: 'Сериялық нөмірі',
+  issuer: 'Куәландырушы орталық',
+  validity: 'Сертификаттың жарамдылық мерзімі',
+  download: 'Жүктеп алу',
+  print: 'Басып шығару',
 };
 
 /** Built-in label sets by language code. Add your own language with the `labels` option. */
-export const LABEL_SETS: Readonly<Record<string, Labels>> = { en: LABELS_EN, ru: LABELS_RU };
+export const LABEL_SETS: Readonly<Record<string, Labels>> = { en: LABELS_EN, ru: LABELS_RU, kk: LABELS_KK };
 
 /**
- * Picks a built-in label set for a BCP 47 language tag (`ru`, `ru-RU`, `en-GB`).
+ * Brings a language tag to the form `Intl` understands. Kazakh is often written with its country code
+ * (`kz`, `kz-KZ`); the language code is `kk`, and with `kz` the browser would silently fall back to its own language.
+ */
+export function normalizeLanguageTag(tag: string): string;
+export function normalizeLanguageTag(tag: string | undefined): string | undefined;
+export function normalizeLanguageTag(tag: string | undefined): string | undefined {
+  if (!tag) return tag;
+  const clean = tag.trim().replace(/_/g, '-');
+  return /^kz(?=-|$)/i.test(clean) ? `kk${clean.slice(2)}` : clean;
+}
+
+/**
+ * Picks a built-in label set for a BCP 47 language tag (`ru`, `ru-RU`, `en-GB`, `kk-KZ`; `kz-KZ` is accepted too).
  * Without a tag the browser language is used. Unknown languages fall back to English.
  */
 export function resolveLabels(language?: string): Labels {
-  const tag = (language ?? (typeof navigator !== 'undefined' ? navigator.language : '') ?? '').toLowerCase();
+  const tag = normalizeLanguageTag(language ?? (typeof navigator !== 'undefined' ? navigator.language : '') ?? '').toLowerCase();
   return LABEL_SETS[tag.split('-')[0]] ?? LABELS_EN;
 }

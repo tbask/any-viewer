@@ -15,7 +15,8 @@ no third-party services. The file never leaves the device.
   Parsing runs in Web Workers, tables and PDF pages are virtualized.
 - **Framework-agnostic**: plain DOM API, plus ready bindings for [Angular 17+](./docs/angular.md),
   [React](./docs/react.md) and a host page for [Flutter and other WebViews](./docs/flutter.md).
-- **View only**: no download button; context menu, drag-out, text selection and copying are off by default.
+- **View only by default**: no download or print button unless you switch them on; context menu, drag-out,
+  text selection and copying are off.
   This is a UI convenience, [not copy protection](./docs/security.md#no-download-button-is-not-copy-protection).
 
 > **Status: 0.x.** The API may still change between minor versions. Rendering aims to make content readable
@@ -106,6 +107,43 @@ Load the page into a WebView and pass a URL or the file bytes. [WebView guide �
 
 The single-file build is about 2.6 MB (880 kB gzipped) because everything, PDF.js included, is inlined.
 Prefer the npm package with a bundler: it loads only the code a given file needs.
+
+## Options
+
+Out of the box the viewer is **view only**: the file cannot be downloaded, printed, copied or dragged out.
+Every restriction is an option, so each application opens up exactly what it needs:
+
+```ts
+const viewer = createViewer(container, {
+  download: true,   // off by default
+  print: true,      // off by default
+  allowCopy: true,  // off by default
+  locale: 'kk-KZ',
+});
+
+viewer.setLocale('ru-RU'); // switches the interface and number formats at run time
+```
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| `download` | `false` | Toolbar button that saves the file |
+| `print` | `false` | Toolbar button that prints the file |
+| `allowCopy` | `false` | Text selection and copying. Off: no selection, Ctrl/Cmd+C, X, A are blocked |
+| `suppressSaveUi` | `true` | Turns off the context menu and dragging content out |
+| `links` | `'new-tab'` | Links inside files: `'new-tab'` or `'none'`; `onLinkClick` hands them to the application |
+| `toolbar` | `true` | Top bar with the file name, pages and zoom |
+| `locale` | browser language | Interface language (`en`, `ru`, `kk`) and number and date formats; changed at run time with `setLocale()` |
+| `uiLanguage` | follows `locale` | Pins the interface to one language |
+| `labels` | — | Your own interface strings, for any language |
+| `passwordPrompt` | `true` | Ask for the password of a protected file |
+| `openArchiveEntries` | `true` | Open files from inside an archive |
+| `strictExtension` | `false` | Reject files whose extension does not match the content |
+| `htmlMode` | `'document'` | Show HTML as a document or as `'source'` |
+| `limits` | see the reference | Maximum file, table and image sizes |
+| `pdf`, `fetchOptions` | — | PDF.js assets and authorization for files loaded by URL |
+
+These restrictions are a UI convenience, [not copy protection](./docs/security.md#no-download-button-is-not-copy-protection).
+All options with details: [API reference](./docs/api.md#createviewercontainer-options).
 
 ## Supported formats
 
