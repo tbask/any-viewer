@@ -1,0 +1,16 @@
+name: Feature request
+description: A format, a rendering feature or an API you are missing
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you need
+      description: The use case first, then the proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: Sample file
+      description: For a format or rendering feature, attach a file that shows it.

@@ -1,0 +1,54 @@
+{
+  "name": "any-viewer-angular",
+  "version": "0.11.0",
+  "description": "Angular 17+ component for any-viewer, the client-side file viewer (PDF, Word, Excel, PowerPoint, images, archives and more).",
+  "keywords": [
+    "angular",
+    "file-viewer",
+    "document-viewer",
+    "any-viewer",
+    "pdf",
+    "docx",
+    "xlsx",
+    "pptx",
+    "preview"
+  ],
+  "license": "MIT",
+  "author": "tbask",
+  "homepage": "https://github.com/tbask/any-viewer/tree/main/packages/angular#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tbask/any-viewer.git",
+    "directory": "packages/angular"
+  },
+  "bugs": {
+    "url": "https://github.com/tbask/any-viewer/issues"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
+    "release": "npm run build && cd dist && npm publish"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=17.0.0",
+    "@angular/core": ">=17.0.0",
+    "any-viewer": "^0.11.0"
+  },
+  "dependencies": {
+    "tslib": "^2.6.0"
+  },
+  "devDependencies": {
+    "@angular/common": "~17.3.0",
+    "@angular/compiler": "~17.3.0",
+    "@angular/compiler-cli": "~17.3.0",
+    "@angular/core": "~17.3.0",
+    "any-viewer": "file:../..",
+    "ng-packagr": "~17.3.0",
+    "rxjs": "~7.8.0",
+    "typescript": "~5.4.0",
+    "zone.js": "~0.14.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

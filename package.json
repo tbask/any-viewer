@@ -1,0 +1,109 @@
+{
+  "name": "any-viewer",
+  "version": "0.11.0",
+  "description": "Client-side file viewer for the web and mobile WebViews: PDF, Word, Excel, PowerPoint, OpenDocument, images, archives, e-mail, media and more. No server conversion, no runtime dependencies.",
+  "keywords": [
+    "file-viewer",
+    "document-viewer",
+    "viewer",
+    "preview",
+    "pdf",
+    "docx",
+    "doc",
+    "xlsx",
+    "xls",
+    "pptx",
+    "ppt",
+    "odt",
+    "ods",
+    "odp",
+    "rtf",
+    "csv",
+    "office",
+    "archive",
+    "webview",
+    "angular",
+    "react",
+    "flutter",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "tbask",
+  "homepage": "https://github.com/tbask/any-viewer#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tbask/any-viewer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tbask/any-viewer/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/standalone/any-viewer.global.js",
+  "jsdelivr": "./dist/standalone/any-viewer.global.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "default": "./dist/react.js"
+    },
+    "./standalone": "./dist/standalone/any-viewer.global.js",
+    "./standalone/*": "./dist/standalone/*",
+    "./pdfjs/*": "./dist/pdfjs/*",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "react": [
+        "./dist/react.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "NOTICE.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vite demo",
+    "build": "vite build && vite build -c vite.standalone.config.ts && tsc -p tsconfig.build.json",
+    "build:demo": "vite build demo --outDir ../demo-dist --emptyOutDir",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prepublishOnly": "npm run check"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/react": "^18.3.32",
+    "pdfjs-dist": "6.5.438",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.12"
+  }
+}

@@ -1,0 +1,5 @@
+* text=auto eol=lf
+test/fixtures/** binary
+test/fixtures/**/*.py text eol=lf
+*.png binary
+*.pdf binary
