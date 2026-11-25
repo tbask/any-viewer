@@ -1,0 +1,21 @@
+node_modules/
+dist/
+demo-dist*/
+.angular/
+coverage/
+*.log
+*.tgz
+.DS_Store
+scratch/
+__pycache__/
+
+# Editor settings
+.idea/
+.vscode/
+
+# Credentials must never be committed
+.env
+.env.*
+.npmrc
+*.pem
+*.key

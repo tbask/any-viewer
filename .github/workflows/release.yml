@@ -1,0 +1,55 @@
+# Publishes both packages to npm when a tag vX.Y.Z is pushed.
+#
+# One-time setup, either of:
+#   a) Trusted publishing (no secret, recommended): on npmjs.com open each package → Settings → Trusted Publisher,
+#      choose GitHub Actions and enter this repository and the workflow file name `release.yml`.
+#      The first version of each package has to be published manually (`npm publish`) before this can be set.
+#   b) Token: create a granular npm access token limited to these two packages and save it as the
+#      repository secret NPM_TOKEN.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write # npm provenance / trusted publishing
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@11
+      - name: Check that the tag matches package.json
+        run: |
+          test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+          test "v$(node -p "require('./packages/angular/package.json').version")" = "$GITHUB_REF_NAME"
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run check
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm install
+        working-directory: packages/angular
+      - run: npm run build
+        working-directory: packages/angular
+      - run: npm publish --provenance --access public
+        working-directory: packages/angular/dist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

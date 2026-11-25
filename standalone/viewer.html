@@ -1,0 +1,100 @@
+<!doctype html>
+<!--
+  any-viewer host page for WebViews (Flutter, React Native, native Android/iOS) and iframes.
+
+  Open a file in one of three ways:
+    1. URL parameters:  viewer.html?src=https://example.com/report.docx&name=report.docx&lang=en
+    2. From the host:   AnyViewerHost.open({ url, name })  or  AnyViewerHost.open({ base64, name })
+    3. postMessage:     { type: 'open', url | base64, name, format, password }
+
+  Events are sent back as JSON strings ({ type: 'ready' | 'load' | 'error', ... }) to whichever bridge exists:
+  a JavaScript channel named `AnyViewer` (Flutter), `ReactNativeWebView`, a `flutter_inappwebview` handler
+  named `AnyViewer`, or the parent window (iframe).
+
+  Parameters: src, name, format, lang (en | ru), toolbar=0, copy=1, pdfAssets (URL of the pdfjs/ folder).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>any-viewer</title>
+    <style>
+      html, body { height: 100%; margin: 0; }
+      #viewer { height: 100%; }
+    </style>
+  </head>
+  <body>
+    <div id="viewer"></div>
+    <script src="./any-viewer.global.js"></script>
+    <script>
+      (function () {
+        'use strict';
+        var params = new URLSearchParams(location.search);
+
+        function send(message) {
+          var text = JSON.stringify(message);
+          try {
+            if (window.AnyViewerChannel && window.AnyViewerChannel.postMessage) window.AnyViewerChannel.postMessage(text);
+            else if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(text);
+            else if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) window.flutter_inappwebview.callHandler('AnyViewer', text);
+            else if (window.parent && window.parent !== window) window.parent.postMessage(text, '*');
+          } catch (e) {
+            /* no bridge: the page still works on its own */
+          }
+        }
+
+        var viewer = AnyViewer.createViewer(document.getElementById('viewer'), {
+          uiLanguage: params.get('lang') || undefined,
+          toolbar: params.get('toolbar') !== '0',
+          allowCopy: params.get('copy') === '1',
+          pdf: { assetsUrl: params.get('pdfAssets') || new URL('../pdfjs/', location.href).href },
+          onLoad: function (info) {
+            send({ type: 'load', name: info.name, format: info.format, kind: info.kind, size: info.size });
+          },
+          onError: function (error) {
+            send({ type: 'error', code: error.code, message: error.message, passwordState: error.passwordState });
+          },
+        });
+
+        function fromBase64(text) {
+          var binary = atob(text);
+          var bytes = new Uint8Array(binary.length);
+          for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          return bytes;
+        }
+
+        function open(request) {
+          var source = request.base64 != null ? fromBase64(request.base64) : request.url;
+          if (source == null) return Promise.resolve();
+          return viewer
+            .open(source, { name: request.name, format: request.format, mimeType: request.mimeType, password: request.password })
+            .catch(function () {
+              /* already reported through onError */
+            });
+        }
+
+        window.AnyViewerHost = {
+          viewer: viewer,
+          open: open,
+          close: function () { viewer.close(); },
+          zoomIn: function () { viewer.zoomIn(); },
+          zoomOut: function () { viewer.zoomOut(); },
+          zoomReset: function () { viewer.zoomReset(); },
+        };
+
+        window.addEventListener('message', function (event) {
+          var data = event.data;
+          if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) { return; }
+          }
+          if (!data || typeof data !== 'object') return;
+          if (data.type === 'open') open(data);
+          else if (data.type === 'close') viewer.close();
+        });
+
+        send({ type: 'ready' });
+        if (params.get('src')) open({ url: params.get('src'), name: params.get('name') || undefined, format: params.get('format') || undefined });
+      })();
+    </script>
+  </body>
+</html>

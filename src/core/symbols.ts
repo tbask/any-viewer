@@ -1,0 +1,75 @@
+/**
+ * Characters of the Windows symbol fonts (Symbol, Wingdings, Webdings) → Unicode.
+ * Documents store bullets and "inserted symbols" as codes of these fonts, usually moved to the private use
+ * area (U+F0xx); without the font they are invisible, so the common ones are mapped to regular characters.
+ */
+const WINGDINGS: Record<number, string> = {
+  0x21: '✏', 0x22: '✂', 0x23: '✁', 0x28: '☎', 0x29: '✆', 0x2a: '✉', 0x36: '⌛', 0x37: '⌨', 0x3f: '✍', 0x41: '✌', 0x43: '👍', 0x44: '👎',
+  0x45: '☜', 0x46: '☞', 0x47: '☝', 0x48: '☟', 0x4a: '☺', 0x4b: '😐', 0x4c: '☹', 0x4e: '☠', 0x4f: '⚐', 0x51: '✈', 0x52: '☼', 0x54: '❄',
+  0x58: '✠', 0x59: '✡', 0x5a: '☪', 0x5b: '☯', 0x5e: '♈', 0x6c: '●', 0x6d: '❍', 0x6e: '■', 0x6f: '□', 0x70: '◻', 0x71: '❑', 0x72: '❒',
+  0x73: '⬧', 0x74: '⧫', 0x75: '◆', 0x76: '❖', 0x77: '⬥', 0x78: '⌧', 0x79: '⍓', 0x7a: '⌘', 0x7b: '❀', 0x7c: '✿', 0x7d: '❝', 0x7e: '❞',
+  0x80: '⓪', 0x81: '①', 0x82: '②', 0x83: '③', 0x84: '④', 0x85: '⑤', 0x86: '⑥', 0x87: '⑦', 0x88: '⑧', 0x89: '⑨', 0x8a: '⑩',
+  0x8b: '⓿', 0x8c: '❶', 0x8d: '❷', 0x8e: '❸', 0x8f: '❹', 0x90: '❺', 0x91: '❻', 0x92: '❼', 0x93: '❽', 0x94: '❾', 0x95: '❿',
+  0x9e: '·', 0x9f: '•', 0xa0: '▪', 0xa1: '○', 0xa2: '⭕', 0xa4: '◉', 0xa5: '◎', 0xa7: '▪', 0xa8: '◻', 0xaa: '✦', 0xab: '★', 0xac: '✶',
+  0xad: '✴', 0xae: '✹', 0xaf: '✵', 0xb1: '⌖', 0xb2: '⟡', 0xb3: '⌑', 0xb5: '✪', 0xb6: '✰', 0xd5: '⌫', 0xd6: '⌦', 0xd8: '➢', 0xdc: '➲',
+  0xdf: '←', 0xe0: '→', 0xe1: '↑', 0xe2: '↓', 0xe3: '↖', 0xe4: '↗', 0xe5: '↙', 0xe6: '↘', 0xe7: '←', 0xe8: '➔', 0xe9: '↑', 0xea: '↓',
+  0xef: '⇦', 0xf0: '⇨', 0xf1: '⇧', 0xf2: '⇩', 0xf3: '⬄', 0xf4: '⇳', 0xf8: '▭', 0xf9: '▫', 0xfb: '✗', 0xfc: '✔', 0xfd: '☒', 0xfe: '☑',
+};
+const WINGDINGS2: Record<number, string> = {
+  0x4f: '✗', 0x50: '✓', 0x51: '☒', 0x52: '☑', 0x53: '☒', 0x54: '☒', 0x55: '⊗', 0x56: '⊗', 0x57: '⦸', 0x96: '∙', 0x97: '•', 0x98: '●',
+  0x99: '⬤', 0x9a: '○', 0x9e: '◉', 0xa0: '▪', 0xa1: '■', 0xa2: '□', 0xa3: '◻', 0xae: '◆', 0xaf: '◇', 0xb0: '❖', 0xb1: '✦', 0xb2: '✧',
+};
+const WINGDINGS3: Record<number, string> = {
+  0x21: '⭠', 0x22: '⭢', 0x23: '⭡', 0x24: '⭣', 0x66: '←', 0x67: '→', 0x68: '↑', 0x69: '↓', 0x70: '▲', 0x71: '▼', 0x72: '△', 0x73: '▽',
+  0x74: '◀', 0x75: '▶', 0x76: '◁', 0x77: '▷', 0x7c: '◀', 0x7d: '▶', 0x7e: '◄', 0x7f: '►', 0x80: '◣', 0x81: '◢', 0x82: '◤', 0x83: '◥',
+};
+const SYMBOL: Record<number, string> = {
+  0x22: '∀', 0x24: '∃', 0x27: '∍', 0x2d: '−', 0x40: '≅', 0x5c: '∴', 0x5e: '⊥', 0xa3: '≤', 0xa5: '∞', 0xa7: '♣', 0xa8: '♦', 0xa9: '♥',
+  0xaa: '♠', 0xab: '↔', 0xac: '←', 0xad: '↑', 0xae: '→', 0xaf: '↓', 0xb0: '°', 0xb1: '±', 0xb3: '≥', 0xb4: '×', 0xb5: '∝', 0xb7: '•',
+  0xb8: '÷', 0xb9: '≠', 0xba: '≡', 0xbb: '≈', 0xbc: '…', 0xc5: '⊕', 0xc6: '∅', 0xc7: '∩', 0xc8: '∪', 0xd0: '∠', 0xd1: '∇', 0xd5: '∏',
+  0xd6: '√', 0xd7: '⋅', 0xd8: '¬', 0xd9: '∧', 0xda: '∨', 0xdb: '⇔', 0xdc: '⇐', 0xdd: '⇑', 0xde: '⇒', 0xdf: '⇓', 0xe0: '◊', 0xe5: '∑',
+  0xf2: '∫',
+};
+const GREEK = 'ΑΒΧΔΕΦΓΗΙϑΚΛΜΝΟΠΘΡΣΤΥςΩΞΨΖ';
+const WEBDINGS: Record<number, string> = { 0x34: '▶', 0x33: '◀', 0x35: '▲', 0x36: '▼', 0x3d: '■', 0x6e: '●', 0x61: '✔', 0x72: '✘', 0x67: '■', 0x63: '□' };
+
+function tableFor(font: string | undefined): Record<number, string> | undefined {
+  const f = (font ?? '').toLowerCase();
+  if (f.includes('wingdings 2')) return WINGDINGS2;
+  if (f.includes('wingdings 3')) return WINGDINGS3;
+  if (f.includes('wingdings')) return WINGDINGS;
+  if (f.includes('webdings')) return WEBDINGS;
+  if (f === 'symbol') return SYMBOL;
+  return undefined;
+}
+
+/** true if the font is one of the Windows symbol fonts. */
+export function isSymbolFont(font: string | undefined): boolean {
+  return tableFor(font) !== undefined;
+}
+
+/**
+ * A character of a symbol font as regular Unicode. Characters outside symbol fonts are returned unchanged,
+ * except private use codes U+F0xx, which have no meaning without their font and become `fallback`.
+ */
+export function symbolChar(font: string | undefined, ch: string, fallback = '•'): string {
+  const table = tableFor(font);
+  let out = '';
+  for (const c of ch) {
+    let code = c.codePointAt(0)!;
+    const pua = code >= 0xf000 && code <= 0xf0ff;
+    if (pua) code -= 0xf000;
+    // A character beyond the 8-bit range is already Unicode, whatever font the file names for it.
+    if (!table || (!pua && code > 0xff)) {
+      out += pua ? fallback : c;
+      continue;
+    }
+    if (code <= 0x20) out += ' ';
+    else if (table[code]) out += table[code];
+    else if (table === SYMBOL && code >= 0x41 && code <= 0x5a) out += GREEK[code - 0x41];
+    else if (table === SYMBOL && code >= 0x61 && code <= 0x7a) out += GREEK[code - 0x61].toLowerCase();
+    else if (table === SYMBOL && code < 0x80) out += String.fromCharCode(code);
+    else out += fallback;
+  }
+  return out;
+}

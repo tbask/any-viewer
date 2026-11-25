@@ -1,0 +1,38 @@
+name: Bug report
+description: A file opens wrongly, or the viewer misbehaves
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach files with personal or confidential data. For security problems use the Security tab instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you see and what you expected. A screenshot of the file in its native application helps a lot.
+    validations:
+      required: true
+  - type: input
+    id: format
+    attributes:
+      label: File format and the application that produced the file
+      placeholder: docx, Microsoft Word 2021
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: Sample file
+      description: Attach the file (zip it if GitHub rejects the extension), or describe how to produce one.
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: any-viewer 0.8.0, Chrome 142, Android 15 WebView, Angular 18
+    validations:
+      required: true
+  - type: input
+    id: code
+    attributes:
+      label: Error code, if any
+      placeholder: corrupt
