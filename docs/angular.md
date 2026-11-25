@@ -1,7 +1,8 @@
 # Angular
 
 `any-viewer-angular` is a standalone component for **Angular 17 and newer**. It is built in Angular's partial
-compilation mode with Angular 17.3 and verified in applications on Angular 17.3 and Angular 22.
+compilation mode with Angular 22.3; the compiled declarations are linked by the Angular version of the
+application, and this was checked with the Angular 17.3 linker and TypeScript 5.4.
 
 ## Install
 

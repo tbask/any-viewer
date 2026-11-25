@@ -53,5 +53,7 @@ jobs:
           path: dist
       - run: npm install
         working-directory: packages/angular
+      - run: npm audit --audit-level=high
+        working-directory: packages/angular
       - run: npm run build
         working-directory: packages/angular

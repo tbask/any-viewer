@@ -11,6 +11,16 @@ updates:
     directory: /packages/angular
     schedule:
       interval: monthly
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - ng-packagr
+          - zone.js
+    ignore:
+      # Angular supports a fixed TypeScript range; a newer TypeScript breaks the build.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

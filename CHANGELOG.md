@@ -19,6 +19,10 @@ All notable changes to this project are documented here. The format follows
 
 - `NOTICE.md` lists every resource bundled with PDF.js with its license, the references the format readers
   follow, and the bzip2 license.
+- `any-viewer-angular` is built with Angular 22.3 instead of 17.3, which clears the security advisories in its
+  build dependencies. Applications on Angular 17 and newer are still supported. The typings moved to
+  `types/any-viewer-angular.d.ts`; the `esm2022/` and `lib/` folders are no longer in the package, so deep
+  imports into them stop working (the package entry point is unchanged).
 
 Versions 0.9.0 and 0.10.0 contained the RAR decompressor and were withdrawn from npm.
 

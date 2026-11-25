@@ -75,7 +75,7 @@ bootstrapApplication(AppComponent, {
 
 - Standalone component; works in `NgModule` applications through `imports`.
 - The viewer core is loaded lazily and runs outside `NgZone`; zoneless and SSR applications are supported.
-- Built with Angular 17.3 in partial compilation mode; verified on Angular 17.3 and 22.
+- Built with Angular 22.3 in partial compilation mode; the declarations link with Angular 17 and newer.
 
 Full guide: <https://github.com/tbask/any-viewer/blob/main/docs/angular.md>
 

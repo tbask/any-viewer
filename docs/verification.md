@@ -13,7 +13,9 @@ An honest account of what has been checked and how. If a claim is not on this pa
 - **End-to-end checks in Chrome** (desktop and phone emulation): opening every format, switching sheets, errors,
   truncated and protected files, cancelling an open, a 300,000-row table, a 60-page PDF, ranged PDF loading,
   files inside archives, media playback, copy blocking.
-- **Bindings**: the Angular package in applications on Angular 17.3 and 22, the React binding with React 18 in
+- **Bindings**: the Angular package in applications on Angular 17.3 and 22 (the build made with Angular 17.3;
+  the current build, made with Angular 22.3, was linked with the Angular 17.3 linker and its typings were checked
+  with TypeScript 5.4), the React binding with React 18 in
   strict mode, the WebView host page over HTTP and from `file://` — all in desktop Chrome, each opening docx, xlsx,
   pptx, pdf, zip, a broken file, and surviving destroy/recreate.
 
@@ -67,7 +69,8 @@ status of every finding is in [review-0.7.0.md](./review-0.7.0.md).
 - Pinch zoom on a real touch screen (only Chrome touch emulation).
 - Safari and Firefox on desktop.
 - A strict Content Security Policy.
-- Angular 17.0–17.2 specifically (the package is built against 17.3 and declares `>=17.0.0`).
+- Applications on Angular 17–21 running the current Angular build: it is made with Angular 22.3 and declares
+  `>=17.0.0`; linking and typings were checked for 17.3, a running application was not.
 - The Flutter example.
 
 Reports from these environments are very welcome — see [CONTRIBUTING.md](../CONTRIBUTING.md).
