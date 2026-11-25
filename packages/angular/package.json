@@ -41,7 +41,7 @@
     "@angular/common": "~17.3.0",
     "@angular/compiler": "~17.3.0",
     "@angular/compiler-cli": "~17.3.0",
-    "@angular/core": "~17.3.0",
+    "@angular/core": "~22.3.0",
     "any-viewer": "file:../..",
     "ng-packagr": "~17.3.0",
     "rxjs": "~7.8.0",
